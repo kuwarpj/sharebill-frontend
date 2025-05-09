@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Group } from '@/types';
+import { apiClient } from '@/lib/apiClient';
 import { GROUP_ENDPOINTS } from '@/config/apiConstants';
-import { apiClient } from '@/lib/apiClients';
+import type { RootState } from '../store'; // Import RootState for getState
 
 // Request payload type, previously in services/api.ts
 export interface CreateGroupPayload { 
@@ -24,13 +25,18 @@ const initialState: GroupState = {
   error: null,
 };
 
-export const fetchGroups = createAsyncThunk<Group[], void, { rejectValue: string }>(
+export const fetchGroups = createAsyncThunk<Group[], void, { rejectValue: string, state: RootState }>(
   'groups/fetchGroups', 
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    const token = getState().auth.token;
+    if (!token) return rejectWithValue('Not authenticated');
+    
     try {
+      const headers = { 'Authorization': `Bearer ${token}` };
       const groups = await apiClient<Group[]>({
         method: 'GET',
         endpoint: GROUP_ENDPOINTS.BASE,
+        headers,
       });
       return groups;
     } catch (error: any) {
@@ -39,13 +45,18 @@ export const fetchGroups = createAsyncThunk<Group[], void, { rejectValue: string
   }
 );
 
-export const fetchGroupById = createAsyncThunk<Group, string, { rejectValue: string }>(
+export const fetchGroupById = createAsyncThunk<Group, string, { rejectValue: string, state: RootState }>(
   'groups/fetchGroupById', 
-  async (groupId: string, { rejectWithValue }) => {
+  async (groupId: string, { rejectWithValue, getState }) => {
+    const token = getState().auth.token;
+    if (!token) return rejectWithValue('Not authenticated');
+
     try {
+      const headers = { 'Authorization': `Bearer ${token}` };
       const group = await apiClient<Group>({
         method: 'GET',
         endpoint: GROUP_ENDPOINTS.BY_ID(groupId),
+        headers,
       });
       return group;
     } catch (error: any) {
@@ -54,14 +65,19 @@ export const fetchGroupById = createAsyncThunk<Group, string, { rejectValue: str
   }
 );
 
-export const createNewGroup = createAsyncThunk<Group, CreateGroupPayload, { rejectValue: string }>(
+export const createNewGroup = createAsyncThunk<Group, CreateGroupPayload, { rejectValue: string, state: RootState }>(
   'groups/createNewGroup',
-  async (groupData: CreateGroupPayload, { rejectWithValue }) => {
+  async (groupData: CreateGroupPayload, { rejectWithValue, getState }) => {
+    const token = getState().auth.token;
+    if (!token) return rejectWithValue('Not authenticated');
+    
     try {
+      const headers = { 'Authorization': `Bearer ${token}` };
       const newGroup = await apiClient<Group, CreateGroupPayload>({
         method: 'POST',
         endpoint: GROUP_ENDPOINTS.BASE,
         body: groupData,
+        headers,
       });
       return newGroup;
     } catch (error: any) {
@@ -97,7 +113,6 @@ const groupSlice = createSlice({
       })
       .addCase(fetchGroupById.pending, (state) => {
         state.status = 'loading';
-        // state.error = null; // Don't clear error if currentGroup is just updating
       })
       .addCase(fetchGroupById.fulfilled, (state, action: PayloadAction<Group>) => {
         state.status = 'succeeded';
@@ -114,8 +129,7 @@ const groupSlice = createSlice({
       })
       .addCase(createNewGroup.fulfilled, (state, action: PayloadAction<Group>) => {
         state.status = 'succeeded';
-        state.groups.push(action.payload); // Add to the list of groups
-        // Optionally, set as currentGroup or redirect, handled by component
+        state.groups.push(action.payload); 
       })
       .addCase(createNewGroup.rejected, (state, action) => {
         state.status = 'failed';

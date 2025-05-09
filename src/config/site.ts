@@ -1,3 +1,4 @@
+
 import type { NavItem } from '@/types';
 import { LayoutDashboard, Users, History, UserCircle } from 'lucide-react';
 
@@ -19,23 +20,25 @@ export const siteConfig: SiteConfig = {
   sidebarNav: [
     {
       title: 'Dashboard',
-      href: '/', // This will now point to src/app/(app)/page.tsx
+      href: '/dashboard', // Updated to point to /dashboard
       icon: LayoutDashboard,
     },
     {
       title: 'Groups',
-      href: '/groups', // This will point to src/app/(app)/groups/page.tsx
+      href: '/groups', 
       icon: Users,
     },
     {
       title: 'Activity',
-      href: '/activity', // This will point to src/app/(app)/activity/page.tsx
+      href: '/activity', 
       icon: History,
     },
     {
       title: 'Account',
-      href: '/account', // This will point to src/app/(app)/account/page.tsx
+      href: '/account', 
       icon: UserCircle,
     },
   ],
 };
+
+    
