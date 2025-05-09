@@ -1,5 +1,5 @@
 import { UserAuthForm } from "@/components/auth/user-auth-form";
-import type { Metadata } from "next"; 
+import type { Metadata } from "next"; // Use 'import type'
 
 export const metadata: Metadata = {
   title: "Login - ShareBill",

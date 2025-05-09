@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -18,7 +19,6 @@ import { CreditCard, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
-// No longer need loadUserFromStorage or useEffect here if AppLayout handles it.
 
 export function AppSidebarNav() {
   const pathname = usePathname();
@@ -26,24 +26,18 @@ export function AppSidebarNav() {
   const dispatch = useAppDispatch();
   const { user: currentUser, status: authStatus } = useAppSelector((state) => state.auth);
 
-  // AppLayout is now responsible for the initial loadUserFromStorage.
-  // This component will reflect the auth state once AppLayout resolves it.
-
-
   const handleLogout = () => { 
     dispatch(logout());
     router.push('/login');
-    // router.refresh(); // Not strictly necessary
   };
 
   const isLoadingAuth = authStatus === 'loading' || authStatus === 'idle';
-
 
   return (
     <>
       <SidebarHeader className="border-b">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2"> {/* Point to /dashboard */}
             <CreditCard className="h-6 w-6 text-primary" />
             <span className="font-bold text-lg">{siteConfig.name}</span>
           </Link>
@@ -56,7 +50,7 @@ export function AppSidebarNav() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+                isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/' && pathname.startsWith(item.href))} // Adjusted active check for /dashboard
                 tooltip={item.title}
               >
                 <Link href={item.href}>
@@ -69,7 +63,7 @@ export function AppSidebarNav() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="mt-auto border-t p-2">
-         {isLoadingAuth && !currentUser ? ( // Show skeleton if loading and no user yet
+         {isLoadingAuth && !currentUser ? ( 
             <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:hidden">
                 <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-full bg-muted animate-pulse"></div>
@@ -104,8 +98,11 @@ export function AppSidebarNav() {
                 </Button>
              </div>
            </>
-         ) : null /* Render nothing if not loading and no current user (e.g. on login page) - though this sidebar is part of app layout */ }
+         ) : null 
+         }
       </SidebarFooter>
     </>
   );
 }
+
+    

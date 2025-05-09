@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Expense } from '@/types';
+import { apiClient } from '@/lib/apiClient';
 import { EXPENSE_ENDPOINTS } from '@/config/apiConstants';
-import { apiClient } from '@/lib/apiClients';
+import type { RootState } from '../store'; // Import RootState for getState
 
 // Request payload type, previously in services/api.ts
 export interface AddExpensePayload { 
@@ -25,13 +26,18 @@ const initialState: ExpenseState = {
   error: null,
 };
 
-export const fetchExpensesByGroupId = createAsyncThunk<Expense[], string, { rejectValue: string }>(
+export const fetchExpensesByGroupId = createAsyncThunk<Expense[], string, { rejectValue: string, state: RootState }>(
   'expenses/fetchByGroupId',
-  async (groupId: string, { rejectWithValue }) => {
+  async (groupId: string, { rejectWithValue, getState }) => {
+    const token = getState().auth.token;
+    if (!token) return rejectWithValue('Not authenticated');
+
     try {
+      const headers = { 'Authorization': `Bearer ${token}` };
       const expenses = await apiClient<Expense[]>({
         method: 'GET',
         endpoint: EXPENSE_ENDPOINTS.BY_GROUP_ID(groupId),
+        headers,
       });
       return expenses;
     } catch (error: any) {
@@ -40,14 +46,19 @@ export const fetchExpensesByGroupId = createAsyncThunk<Expense[], string, { reje
   }
 );
 
-export const addNewExpense = createAsyncThunk<Expense, AddExpensePayload, { rejectValue: string }>(
+export const addNewExpense = createAsyncThunk<Expense, AddExpensePayload, { rejectValue: string, state: RootState }>(
   'expenses/addNewExpense',
-  async (expenseData: AddExpensePayload, { rejectWithValue }) => {
+  async (expenseData: AddExpensePayload, { rejectWithValue, getState }) => {
+    const token = getState().auth.token;
+    if (!token) return rejectWithValue('Not authenticated');
+    
     try {
+      const headers = { 'Authorization': `Bearer ${token}` };
       const newExpense = await apiClient<Expense, AddExpensePayload>({
         method: 'POST',
         endpoint: EXPENSE_ENDPOINTS.BASE,
         body: expenseData,
+        headers,
       });
       return newExpense;
     } catch (error: any) {
@@ -83,12 +94,11 @@ const expenseSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(addNewExpense.pending, (state) => {
-        state.status = 'loading'; // Or a specific 'adding' status
+        state.status = 'loading'; 
         state.error = null;
       })
       .addCase(addNewExpense.fulfilled, (state, action: PayloadAction<Expense>) => {
         state.status = 'succeeded';
-        // Add new expense to the beginning, sorted by date by API/DB later on full fetch
         state.expenses.unshift(action.payload); 
       })
       .addCase(addNewExpense.rejected, (state, action) => {

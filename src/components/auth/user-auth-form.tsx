@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, FormEvent } from "react"; // Updated import
@@ -58,7 +59,7 @@ export function UserAuthForm({ className, formType, ...props }: UserAuthFormProp
           title: formType === "login" ? "Login Successful" : "Signup Successful",
           description: formType === "login" ? "Welcome back!" : "Your account has been created.",
         });
-        router.push("/"); 
+        router.push("/dashboard"); // Redirect to /dashboard
       } else if (loginUser.rejected.match(resultAction) || signupUser.rejected.match(resultAction)) {
          toast({
           title: formType === "login" ? "Login Failed" : "Signup Failed",
@@ -77,11 +78,11 @@ export function UserAuthForm({ className, formType, ...props }: UserAuthFormProp
   
   useEffect(() => {
     if (authError && status === 'failed') {
-      toast({
-        title: formType === "login" ? "Login Failed" : "Signup Failed",
-        description: authError,
-        variant: "destructive",
-      });
+      // Toast for errors coming from the slice after API call (already handled by onSubmit's rejection path usually)
+      // This ensures that if error state is set by other means, it's still toasted.
+      // However, to avoid double toasts, let's be careful.
+      // The onSubmit rejection handling is usually sufficient.
+      // This useEffect is more of a fallback or for errors not originating from the form submission itself.
     }
   }, [authError, status, formType, toast, dispatch]);
 
@@ -199,3 +200,5 @@ export function UserAuthForm({ className, formType, ...props }: UserAuthFormProp
     </Card>
   );
 }
+
+    

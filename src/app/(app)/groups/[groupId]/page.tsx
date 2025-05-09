@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState, useCallback, FormEvent } from "react"; // Updated import
+import { useEffect, useState, useCallback, FormEvent } from "react"; 
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import type { UserProfile } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchGroupById, clearGroupError, setCurrentGroup } from "@/store/slices/groupSlice";
 import { fetchExpensesByGroupId, addNewExpense, clearExpenseError, clearExpenses } from "@/store/slices/expenseSlice";
+import { DropdownMenuForGroupActions } from "@/components/groups/DropdownMenuForGroupActions";
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -114,8 +115,6 @@ export default function GroupDetailPage() {
         category: expenseCategory,
         participantIds: selectedParticipantIds,
       }));
-
-      console.log("This is Result Actions", resultAction)
 
       if (addNewExpense.fulfilled.match(resultAction)) {
         toast({ title: "Expense Added", description: `${resultAction.payload.description} of $${resultAction.payload.amount.toFixed(2)} added.` });
@@ -414,30 +413,5 @@ export default function GroupDetailPage() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-// Dropdown menu for group actions (placeholder)
-function DropdownMenuForGroupActions() {
-  // TODO: Implement functionality for these actions
-  return (
-    <Dialog> 
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Settings className="h-4 w-4" />
-          <span className="sr-only">Group Settings</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Group Settings</DialogTitle>
-        </DialogHeader>
-        <div className="py-4 space-y-2">
-          <Button variant="outline" className="w-full justify-start" disabled><Edit3 className="mr-2 h-4 w-4" /> Edit Group Details</Button>
-          <Button variant="outline" className="w-full justify-start" disabled><UserPlus className="mr-2 h-4 w-4" /> Add/Remove Members</Button>
-          <Button variant="destructive" className="w-full justify-start" disabled>Leave Group</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
