@@ -40,7 +40,7 @@ npm run dev
 > yarn dev
 > ```
 
-Open [http://localhost:2034](http://localhost:2034) in your browser to see the app.
+Open [http://localhost:9002](http://localhost:9002) in your browser to see the app.
 
 ---
 
