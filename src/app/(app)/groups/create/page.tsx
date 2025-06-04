@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, FormEvent } from "react"; // Updated import
+import { useState, useEffect, useCallback, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, PlusCircle, Trash2, Users, UserPlus } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, Users, UserPlus, Mail } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createNewGroup, clearGroupError } from "@/store/slices/groupSlice";
 
@@ -24,6 +24,8 @@ export default function CreateGroupPage() {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const { status, error: groupError } = useAppSelector((state) => state.groups);
+  const { user: currentUser } = useAppSelector((state) => state.auth);
+
 
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
@@ -60,24 +62,33 @@ export default function CreateGroupPage() {
     if (groupName.length > 50) {
       errors.groupName = "Group name must be less than 50 characters.";
     }
-    // No validation for groupDescription length for now, can be added if needed
     
-    const validMembers = members.filter(m => m.email.trim() !== "");
-    // Updated: Creator is added on backend. Frontend can allow group creation without explicitly adding other members.
-    // If members are added, they must be valid emails.
-    if (validMembers.length > 0) {
-        validMembers.forEach(member => {
-            if (!/\S+@\S+\.\S+/.test(member.email)) {
-                errors.members = (errors.members ? errors.members + " " : "") + "Please provide valid email addresses for all added members.";
-            }
-        });
-    }
-    // If only one member input field is present and it's empty, it's fine (creator only group)
-    // If multiple member input fields are present, and some are empty, that's also fine - they'll be ignored.
+    const memberEmails = members.map(m => m.email.trim().toLowerCase());
+    const uniqueEmails = new Set<string>();
+
+    memberEmails.forEach(email => {
+      if (email === "") return; // Skip empty emails
+
+      if (email === currentUser?.email.toLowerCase()) {
+         if (!errors.members) errors.members = "";
+         errors.members += "You are automatically added. Do not add your own email. ";
+      }
+      if (uniqueEmails.has(email)) {
+        if (!errors.members) errors.members = "";
+        errors.members += `Duplicate email: ${email}. `;
+      }
+      uniqueEmails.add(email);
+
+      if (!/\S+@\S+\.\S+/.test(email)) {
+        if (!errors.members) errors.members = "";
+        errors.members += `Invalid email format: ${email}. `;
+      }
+    });
+
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [groupName, members]); // Removed groupDescription from deps as it's optional and not strictly validated here.
+  }, [groupName, members, currentUser]);
 
   const onSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
@@ -88,28 +99,50 @@ export default function CreateGroupPage() {
       return;
     }
     
-    const memberEmailsForApi = members.filter(m => m.email.trim() !== "").map(m => ({ email: m.email }));
+    // Filter out current user's email and empty strings before sending to API
+    const memberEmailsForApi = members
+      .map(m => ({ email: m.email.trim().toLowerCase() }))
+      .filter(m => m.email !== "" && m.email !== currentUser?.email.toLowerCase());
 
     try {
       const resultAction = await dispatch(createNewGroup({ 
         groupName, 
         groupDescription, 
-        members: memberEmailsForApi, // Backend adds creator automatically
+        members: memberEmailsForApi, 
       }));
 
       if (createNewGroup.fulfilled.match(resultAction)) {
+        const createdGroup = resultAction.payload;
+        const addedMemberNames = createdGroup.members
+            .filter(m => m.id !== currentUser?.id) // Exclude creator
+            .map(m => m.username)
+            .join(', ');
+        
+        const invitedMemberEmails = memberEmailsForApi
+            .filter(apiMember => !createdGroup.members.some(groupMember => groupMember.email.toLowerCase() === apiMember.email))
+            .map(apiMember => apiMember.email)
+            .join(', ');
+
+        let description = `The group "${createdGroup.name}" has been successfully created.`;
+        if (addedMemberNames) {
+            description += ` ${addedMemberNames} added.`;
+        }
+        if (invitedMemberEmails) {
+            description += ` Invitations sent to: ${invitedMemberEmails}.`;
+        }
+
         toast({
           title: "Group Created!",
-          description: `The group "${resultAction.payload.name}" has been successfully created.`,
+          description: description,
         });
-        router.push(`/groups/${resultAction.payload.id}`); 
+        router.push(`/groups/${createdGroup.id}`); 
       } else if (createNewGroup.rejected.match(resultAction)) {
          setFormErrors({ general: resultAction.payload as string || "Failed to create group." });
       }
     } catch (err: any) {
       setFormErrors({ general: err.message || "An unexpected error occurred."});
     }
-  }, [dispatch, groupName, groupDescription, members, toast, router, validateForm]);
+  }, [dispatch, groupName, groupDescription, members, currentUser, toast, router, validateForm]);
   
   const isLoading = status === 'loading';
 
@@ -132,7 +165,7 @@ export default function CreateGroupPage() {
             <CardTitle>Group Details</CardTitle>
           </div>
           <CardDescription>
-            Set up your new group. You will be added as a member automatically. Add other members by email.
+            Set up your new group. You will be added as a member automatically. Add other members by email. If they don&apos;t have an account, they&apos;ll receive an invitation to join.
           </CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit}>
@@ -163,26 +196,25 @@ export default function CreateGroupPage() {
             </div>
 
             <div>
-              <Label className="mb-2 block">Add Members (Optional)</Label>
+              <Label className="mb-2 block">Add Members by Email (Optional)</Label>
               <div className="space-y-3">
                 {members.map((member, index) => (
                   <div key={member.id} className="flex items-center gap-2">
-                     <UserPlus className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                     <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     <Input
-                      placeholder={`Member ${index + 1} email (optional)`}
+                      placeholder={`Member ${index + 1} email`}
                       disabled={isLoading}
                       type="email"
                       value={member.email}
                       onChange={(e) => handleMemberEmailChange(member.id, e.target.value)}
                       className="flex-grow"
                     />
-                    {/* Allow removing even the first input if user decides not to add anyone initially */}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveMember(member.id)}
-                      disabled={isLoading}
+                      disabled={isLoading || members.length === 0} // Disable if it's the only one and it's optional now
                       aria-label="Remove member"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -199,7 +231,7 @@ export default function CreateGroupPage() {
                   disabled={isLoading}
                   className="w-full"
                 >
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Another Member
+                  <UserPlus className="mr-2 h-4 w-4" /> Add Another Member
                 </Button>
               </div>
             </div>

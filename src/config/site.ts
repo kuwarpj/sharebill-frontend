@@ -16,11 +16,11 @@ export const siteConfig: SiteConfig = {
   description: 'An application to manage shared expenses easily.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002', 
   ogImage: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/og.jpg`,
-  mainNav: [], // Main header navigation items, if any
+  mainNav: [], 
   sidebarNav: [
     {
       title: 'Dashboard',
-      href: '/dashboard', // Updated to point to /dashboard
+      href: '/dashboard', 
       icon: LayoutDashboard,
     },
     {
@@ -28,11 +28,11 @@ export const siteConfig: SiteConfig = {
       href: '/groups', 
       icon: Users,
     },
-    {
-      title: 'Activity',
-      href: '/activity', 
-      icon: History,
-    },
+    // {
+    //   title: 'Activity',
+    //   href: '/activity', 
+    //   icon: History,
+    // },
     {
       title: 'Account',
       href: '/account', 

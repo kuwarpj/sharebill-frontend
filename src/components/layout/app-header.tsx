@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { UserCircle, LogOut, CreditCard } from 'lucide-react'; // Removed Settings icon as it's not used here.
+import { UserCircle, LogOut, CreditCard } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,

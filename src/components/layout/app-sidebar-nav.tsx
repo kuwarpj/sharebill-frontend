@@ -35,23 +35,24 @@ export function AppSidebarNav() {
 
   return (
     <>
-      <SidebarHeader className="border-b">
+      <SidebarHeader className="border-b py-[18px]">
         <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2"> {/* Point to /dashboard */}
-            <CreditCard className="h-6 w-6 text-primary" />
+          <Link href="/dashboard" className="flex items-center gap-2"> 
+            {/* <CreditCard className="h-6 w-6 text-primary" /> */}
             <span className="font-bold text-lg">{siteConfig.name}</span>
           </Link>
           <SidebarTrigger className="hidden md:flex" />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className=''>
         <SidebarMenu>
           {siteConfig.sidebarNav.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/' && pathname.startsWith(item.href))} // Adjusted active check for /dashboard
+                isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/' && pathname.startsWith(item.href))} 
                 tooltip={item.title}
+                className='py-5'
               >
                 <Link href={item.href}>
                   {item.icon && <item.icon />}
