@@ -17,7 +17,9 @@ const Routes = {
   ADD_EXPENSE : '/api/expenses/add',
   GET_RECENT_ACTIVITY : '/api/groups/user/recent-activity',
   UPDATE_EXPENSE : '/api/expenses/edit',
-  DASHBOARD_SUMMARY: '/api/users/userDetails'
+  DASHBOARD_SUMMARY: '/api/users/userDetails',
+  GET_NOTIFICATIONS: '/api/invite/getallinvite',
+  ACCEPT_INVITATION: '/api/invite/accept'
 };
 
 export default Routes;
