@@ -21,7 +21,7 @@ const DetailedActivityLogs = () => {
         setLoading(true);
         const data = await fetchAPI(Routes.GET_RECENT_ACTIVITY + `?limit=${limit}&page=${page}`, "GET");
         if (data?.success) {
-            setRecentActivities(data?.data);
+            setRecentActivities(data?.data?.activities || []);
             setTotalPages(data?.totalPages);
         }
         setLoading(false);
