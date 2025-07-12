@@ -12,8 +12,8 @@ const Routes = {
   GET_GROUP_BY_ID : '/api/groups',
 
 
-
-  GET_GROUP_EXPENSE : '/api/expenses/group'
+  GET_GROUP_EXPENSE : '/api/expenses/group',
+  ADD_EXPENSE : '/api/expenses/add'
 };
 
 export default Routes;

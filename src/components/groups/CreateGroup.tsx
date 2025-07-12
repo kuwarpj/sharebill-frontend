@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/card";
 import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
+import { showToast } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface Member {
   id: string;
@@ -24,6 +26,8 @@ interface Member {
 }
 
 export default function CreateGroupForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     groupName: "",
     groupDescription: "",
@@ -58,18 +62,33 @@ export default function CreateGroupForm() {
     []
   );
 
-  const handleCreateGroup = useCallback(() => {
+  const handleCreateGroup = useCallback(async () => {
+    setLoading(true);
     const payload = {
       groupName: formData.groupName,
-      groupDescription: formData.groupDescription,
+      groupDesc: formData.groupDescription,
       members: formData.members.filter((m) => m.email.trim() !== ""),
     };
     try {
-      const data = fetchAPI(Routes.CREATE_GROUP, "POST", payload);
-
-      console.log("This is Data", data);
-    } catch (error) {}
-  }, [formData]);
+      const data = await fetchAPI(Routes.CREATE_GROUP, "POST", payload);
+      if (data?.success) {
+        showToast({
+          title: "Group created successfully",
+          description: "You can now add expenses to this group",
+          type: "success",
+        });
+        router.push(`/groups/${data?.data?.groupId}`);
+      }
+    } catch (error) {
+      showToast({
+        title: "Error creating group",
+        description: "Please try again",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [formData, router]);
 
   return (
     <div className="space-y-6">
@@ -164,8 +183,8 @@ export default function CreateGroupForm() {
         </CardContent>
 
         <CardFooter>
-          <Button onClick={handleCreateGroup} className="w-full">
-            Create Group
+          <Button onClick={handleCreateGroup} className="w-full" disabled={loading}>
+            {loading ? "Creating..." : "Create Group"}
           </Button>
         </CardFooter>
       </Card>

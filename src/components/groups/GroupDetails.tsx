@@ -31,6 +31,27 @@ import {
 import { FileText, Users, ArrowLeft } from "lucide-react";
 import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { ScrollArea } from "../ui/scroll-area";
+import { Checkbox } from "../ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { DialogFooter } from "../ui/dialog";
+import AddGroupExpense from "./AddGroupExpense";
+import { formatCurrency } from "@/lib/utils";
 
 export default function GroupDetailPage() {
   const { groupId } = useParams();
@@ -38,28 +59,50 @@ export default function GroupDetailPage() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    amount: "",
+    description: "",
+    participants: [],
+    paidBy: "",
+  });
+  const [groupMembers, setGroupMembers] = useState([]);
   useEffect(() => {
-    async function fetchGroupData() {
-      try {
-        setLoading(true);
-        const data = await fetchAPI(
-          `${Routes.GET_GROUP_EXPENSE}/${groupId}`,
-          "GET"
-        );
-
-        if (data?.success === true) {
-          setExpenses(data?.data);
-        }
-        setError("");
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+    // Fetch group members
+    async function fetchGroupMembers() {
+      const data = await fetchAPI(
+        `${Routes.GET_GROUP_BY_ID}/${groupId}`,
+        "GET"
+      );
+      console.log("Log mm: ", data);
+      if (data?.success === true) {
+        setGroupMembers(data?.data?.members);
       }
     }
+    fetchGroupMembers();
+  }, []);
 
+  const fetchGroupData = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchAPI(
+        `${Routes.GET_GROUP_EXPENSE}/${groupId}`,
+        "GET"
+      );
+
+      if (data?.success === true) {
+        setExpenses(data?.data);
+      }
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError(err as unknown as string);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (groupId) fetchGroupData();
   }, [groupId]);
 
@@ -85,30 +128,69 @@ export default function GroupDetailPage() {
     );
   }
 
-  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalSpent = expenses.reduce((sum, exp: any) => sum + exp.amount, 0);
+  const totalLent = expenses.filter((exp: any) => exp.status === "lent").reduce(
+    (sum, exp: any) => sum + exp.amountInView,
+    0
+  );
+  const totalOwed = expenses.filter((exp: any) => exp.status === "owe").reduce(
+    (sum, exp: any) => sum + exp.amountInView,
+    0
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" asChild>
-          <Link href="/groups">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to groups</span>
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Group Expenses</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" asChild>
+            <Link href="/groups">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to groups</span>
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold tracking-tight">Group Expenses</h1>
+        </div>
+        <Button onClick={() => setShowModal(true)}>Add Expense</Button>
       </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Spent in Group
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
-        </CardContent>
-      </Card>
+      <div className="flex gap-4">
+        <Card className="w-1/3">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Spent in Group
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(totalSpent)}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-1/3">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-green-500">
+              You will get back
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">
+              {formatCurrency(totalLent)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-1/3">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-red-500">
+              You will have to pay
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-500">
+              {formatCurrency(totalOwed)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {expenses.length > 0 ? (
         <Card>
@@ -120,6 +202,7 @@ export default function GroupDetailPage() {
                 <TableHead>Paid By</TableHead>
                 <TableHead>Participants</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -131,7 +214,7 @@ export default function GroupDetailPage() {
                       {expense.category || "General"}
                     </Badge> */}
                   </TableCell>
-                  <TableCell>${expense.amount.toFixed(2)}</TableCell>
+                  <TableCell>{formatCurrency(expense.amount)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
@@ -148,7 +231,7 @@ export default function GroupDetailPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {expense.participants.map((p) => (
+                      {expense.participants.map((p: any) => (
                         <Avatar
                           key={p.id}
                           className="h-6 w-6 border"
@@ -164,6 +247,17 @@ export default function GroupDetailPage() {
                   </TableCell>
                   <TableCell>
                     {new Date(expense.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {expense.status === "owe" ? (
+                      <div className="text-red-500">
+                        You owe {formatCurrency(expense.amountInView)}
+                      </div>
+                    ) : (
+                      <div className="text-green-500">
+                        You lent {formatCurrency(expense.amountInView)}
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -181,6 +275,13 @@ export default function GroupDetailPage() {
           </CardContent>
         </Card>
       )}
+      <AddGroupExpense
+        groupId={groupId}
+        groupMembers={groupMembers}
+        open={showModal}
+        onOpenChange={setShowModal}
+        handleRefresh={fetchGroupData}
+      />
     </div>
   );
 }
