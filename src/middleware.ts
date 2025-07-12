@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const authTokenCookie = request.cookies.get('authToken');
+  const authTokenCookie = request.cookies.get('token');
 
   // If trying to access /login or /signup and is authenticated (token exists in cookie)
   if ((pathname === '/login' || pathname === '/signup') && authTokenCookie) {

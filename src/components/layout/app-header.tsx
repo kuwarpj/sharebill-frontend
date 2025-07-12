@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { fetchAPI } from "@/lib/apiClient";
+import Routes from "@/config/apiConstants";
 
-export function AppHeader() {
+const AppHeader = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<null | {
     username: string;
@@ -40,13 +41,19 @@ export function AppHeader() {
     }
   }, []);
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("user");
-    setCurrentUser(null);
-    router.push("/login");
-  };
+  const handleLogout = async () => {
+    try {
+      const data = await fetchAPI(Routes.LOGOUT, "POST");
 
+      if (data?.success === true) {
+        localStorage.removeItem("user");
+        setCurrentUser(null);
+        router.push("/");
+      }
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -119,4 +126,6 @@ export function AppHeader() {
       </div>
     </header>
   );
-}
+};
+
+export default AppHeader;
