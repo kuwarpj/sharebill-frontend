@@ -22,13 +22,25 @@ import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
 import { showToast } from "@/lib/utils";
 
-const AddGroupExpense = ({ groupId, groupMembers, open, onOpenChange, handleRefresh }) => {
+const AddGroupExpense = ({ groupId, groupMembers, open, onOpenChange, handleRefresh, expense }) => {
+    console.log('Log expense', expense);
     const [formData, setFormData] = useState({
-        amount: "",
-        description: "",
-        participants: [],
-        paidBy: "",
+        amount: expense?.amount || "",
+        description: expense?.description || "",
+        participants: expense?.participants?.map((participant) => participant.id) || [],
+        paidBy: expense?.paidBy?.id || "",
     });
+
+    useEffect(() => {
+        if (expense) {
+            setFormData({
+                amount: expense?.amount || "",
+                description: expense?.description || "",
+                participants: expense?.participants?.map((participant) => participant.id) || [],
+                paidBy: expense?.paidBy?.id || "",
+            });
+        }
+    }, [expense]);
 
     // Reset form when dialog closes
     useEffect(() => {
@@ -44,11 +56,20 @@ const AddGroupExpense = ({ groupId, groupMembers, open, onOpenChange, handleRefr
 
     const handleSubmit = async () => {
         const { description, amount, paidBy, participants: participantIds } = formData;
-        const data = await fetchAPI(
-            `${Routes.ADD_EXPENSE}`,
-            "POST",
-            { groupId, description, amount, paidBy, participantIds }
-        );
+        let data;
+        if (expense) {
+            data = await fetchAPI(
+                `${Routes.UPDATE_EXPENSE}/${expense.id}`,
+                "POST",
+                { groupId, description, amount, paidBy, participantIds }
+            );
+        } else {
+            data = await fetchAPI(
+                `${Routes.ADD_EXPENSE}`,
+                "POST",
+                { groupId, description, amount, paidBy, participantIds }
+            );
+        }
         if (data?.success === true) {
             showToast({ title: data?.message, type: "success" });
             onOpenChange(false);
@@ -62,7 +83,7 @@ const AddGroupExpense = ({ groupId, groupMembers, open, onOpenChange, handleRefr
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add New Expense</DialogTitle>
+                    <DialogTitle>{expense ? "Update Expense" : "Add New Expense"}</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4">
@@ -143,7 +164,7 @@ const AddGroupExpense = ({ groupId, groupMembers, open, onOpenChange, handleRefr
                     <Button
                         onClick={handleSubmit}
                     >
-                        Add
+                        {expense ? "Update" : "Add"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

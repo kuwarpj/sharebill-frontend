@@ -14,7 +14,8 @@ const Routes = {
 
   GET_GROUP_EXPENSE : '/api/expenses/group',
   ADD_EXPENSE : '/api/expenses/add',
-  GET_RECENT_ACTIVITY : '/api/groups/user/recent-activity'
+  GET_RECENT_ACTIVITY : '/api/groups/user/recent-activity',
+  UPDATE_EXPENSE : '/api/expenses/edit'
 };
 
 export default Routes;

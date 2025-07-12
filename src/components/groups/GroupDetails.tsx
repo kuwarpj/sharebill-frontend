@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileText, Users, ArrowLeft } from "lucide-react";
+import { FileText, Users, ArrowLeft, Edit } from "lucide-react";
 import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
 import {
@@ -60,6 +60,7 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [expense, setExpense] = useState(null);
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
@@ -203,6 +204,7 @@ export default function GroupDetailPage() {
                 <TableHead>Participants</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -259,6 +261,14 @@ export default function GroupDetailPage() {
                       </div>
                     )}
                   </TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="icon" onClick={() => {
+                      setShowModal(true);
+                      setExpense(expense);
+                    }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -278,6 +288,7 @@ export default function GroupDetailPage() {
       <AddGroupExpense
         groupId={groupId}
         groupMembers={groupMembers}
+        expense={expense}
         open={showModal}
         onOpenChange={setShowModal}
         handleRefresh={fetchGroupData}
