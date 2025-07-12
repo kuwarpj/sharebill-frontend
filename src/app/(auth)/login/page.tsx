@@ -1,4 +1,4 @@
-import { UserAuthForm } from "@/components/auth/user-auth-form";
+import LoginForm from "@/components/auth/AuthForm";
 import type { Metadata } from "next"; // Use 'import type'
 
 export const metadata: Metadata = {
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <UserAuthForm formType="login" />;
+  return <LoginForm/>;
 }

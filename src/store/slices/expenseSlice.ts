@@ -73,7 +73,7 @@ const expenseSlice = createSlice({
   reducers: {
     clearExpenseError: (state) => {
       state.error = null;
-    },
+    }, 
     clearExpenses: (state) => {
       state.expenses = [];
       state.status = 'idle';

@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -24,7 +24,7 @@ export interface Group {
   createdAt: string;
   iconUrl?: string;
   // Add balance information related to the current user if needed
-  currentUserBalance?: number; 
+  currentUserBalance?: number;
 }
 
 export interface Expense {
@@ -33,7 +33,7 @@ export interface Expense {
   description: string;
   amount: number;
   paidBy: UserProfile; // Who paid the expense
-  splitType: 'equal' | 'custom'; // For now, 'equal'
+  splitType: "equal" | "custom"; // For now, 'equal'
   participants: UserProfile[]; // Who participated in the expense
   createdAt: string;
   category?: string;
@@ -49,4 +49,17 @@ export interface Transaction {
   createdAt: string;
 }
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+export type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "PATCH"
+  | "HEAD"
+  | "OPTIONS";
+export type ToastType = "success" | "error" | "warning";
+export interface ToastOptions {
+  title: string;
+  description?: string;
+  type?: ToastType;
+}

@@ -1,22 +1,19 @@
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const Routes = {
+  SEND_OPT: "/auth/sendotp",
+  VERIFY_OPT: "/auth/verify-and-signup",
+  LOGIN: "/auth/login",
 
-export const AUTH_ENDPOINTS = {
-  LOGIN: `/auth/login`,
-  SIGNUP: `/auth/signup`,
+  //Groups API
+  GET_USER_GROUP: "/api/groups/usergroup",
+  CREATE_GROUP: "/api/groups/create",
+  GET_GROUP_BY_ID : '/api/groups',
+
+
+
+  GET_GROUP_EXPENSE : '/api/expenses/group'
 };
 
-export const GROUP_ENDPOINTS = {
-  BASE: `/api/groups`,
-  BY_ID: (groupId: string) => `/api/groups/${groupId}`,
-};
-
-export const EXPENSE_ENDPOINTS = {
-  BASE: `/api/expenses`,
-  BY_GROUP_ID: (groupId: string) => `/api/expenses/group/${groupId}`,
-};
-
-export const USER_ENDPOINTS = {
-  GET_ME: `/api/users/me`,
-  // Add other user-specific routes here if needed
-};
+export default Routes;
