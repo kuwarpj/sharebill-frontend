@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchGroups } from "@/store/slices/groupSlice";
+import RecentActivity from "@/components/dashboard/RecentActivity";
 
 
 // Mock data - will be replaced by Redux state and API calls
@@ -23,13 +24,8 @@ export default function DashboardPage() {
   const { groups, status: groupStatus } = useAppSelector(state => state.groups);
   const { user } = useAppSelector((state) => state.auth);
 
-  // Placeholder for status and error from a potential dashboard slice
-  const status = 'succeeded'; 
-  const error = null; 
-
-
   useEffect(() => {
-    if(groupStatus === 'idle' && user) { // Fetch groups if user is loaded and groups are not
+    if(groupStatus === 'idle' && user) {
         dispatch(fetchGroups());
     }
   }, [dispatch, groupStatus, user]);
@@ -51,21 +47,6 @@ export default function DashboardPage() {
     { title: "Groups You're In", value: groupCount.toString(), description: "Active groups", icon: <Users className="h-6 w-6 text-primary" /> },
   ];
 
-
-  // if (status === 'loading') {
-  //   return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
-  // }
-
-  // if (status === 'failed') {
-  //   return (
-  //     <div className="space-y-6 text-center">
-  //       <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
-  //       <h1 className="text-2xl font-semibold">Failed to load dashboard</h1>
-  //       <p className="text-muted-foreground">{error || "An unexpected error occurred."}</p>
-  //       <Button onClick={() => { if(user) dispatch(fetchGroups()) }}>Try Again</Button>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="space-y-8">
@@ -111,44 +92,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-semibold tracking-tight mb-4">Recent Activity</h2>
-        {mockRecentActivity.length > 0 ? (
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <ul className="divide-y divide-border">
-                {mockRecentActivity.map((activity) => (
-                  <li key={activity.id} className="p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{activity.description}</p>
-                        <p className="text-sm text-muted-foreground">In: {activity.group}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-semibold ${activity.amount.includes('owed') ? 'text-destructive' : activity.amount.includes('paid') ? 'text-green-600' : ''}`}>{activity.amount}</p>
-                        <p className="text-xs text-muted-foreground">{activity.date}</p>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter className="pt-4">
-                <Button variant="link" asChild className="mx-auto">
-                    <Link href="/activity">View all activity</Link>
-                </Button>
-            </CardFooter>
-          </Card>
-        ) : (
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-              <Image src="https://picsum.photos/seed/no-dashboard-activity/200/200" alt="No activity illustration" width={150} height={150} className="mb-4 rounded-lg" data-ai-hint="empty document" />
-              <p className="text-lg font-medium">No recent activity yet.</p>
-              <p className="text-muted-foreground">Add some expenses to get started!</p>
-            </CardContent>
-          </Card>
-        )}
-      </section>
+     <RecentActivity />
     </div>
   );
 }
