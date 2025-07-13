@@ -58,8 +58,8 @@ export function AppSidebarNav() {
   // };
   const dispatch = useAppDispatch();
   const handleLogout = async () => {
-    await dispatch(logoutUser()); // 🔥 Full logout via API and redux
-    router.push("/login"); // 🔁 You handle redirect here
+    await dispatch(logoutUser()); 
+    router.push("/login");
   };
 
   return (
@@ -67,10 +67,9 @@ export function AppSidebarNav() {
       <SidebarHeader className="border-b py-[18px]">
         <div className="flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
-            {/* <CreditCard className="h-6 w-6 text-primary" /> */}
-            <span className="font-bold text-lg">{siteConfig.name}</span>
+            <CreditCard className="h-6 w-6 text-primary" />
+            <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">{siteConfig.name}</span>
           </Link>
-          <SidebarTrigger className="hidden md:flex" />
         </div>
       </SidebarHeader>
       <SidebarContent className="">

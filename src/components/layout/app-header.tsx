@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { UserCircle, LogOut, CreditCard, Bell, Check } from "lucide-react";
+import { UserCircle, LogOut, CreditCard, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
 import { showToast } from "@/lib/utils";
 
 const AppHeader = () => {
@@ -30,6 +30,7 @@ const AppHeader = () => {
     id: string;
   }>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+
   useEffect(() => {
     const UserData = localStorage.getItem("user");
     if (UserData) {
@@ -46,7 +47,6 @@ const AppHeader = () => {
   const handleLogout = async () => {
     try {
       const data = await fetchAPI(Routes.LOGOUT, "POST");
-
       if (data?.success === true) {
         localStorage.removeItem("user");
         setCurrentUser(null);
@@ -58,10 +58,7 @@ const AppHeader = () => {
   };
 
   const fetchNotifications = async () => {
-    const data = await fetchAPI(
-      Routes.GET_NOTIFICATIONS + "?limit=5&page=1",
-      "GET"
-    );
+    const data = await fetchAPI(`${Routes.GET_NOTIFICATIONS}?limit=5&page=1`, "GET");
     if (data?.success) {
       setNotifications(data?.data || []);
     }
@@ -71,23 +68,9 @@ const AppHeader = () => {
     fetchNotifications();
   }, []);
 
-  //   {
-  //     "email": "itskuwarjha@gmail.com",
-  //     "groupId": {
-  //         "name": "Rajan-group",
-  //         "description": "",
-  //         "id": "68711f709bf52922349a454b"
-  //     },
-  //     "invitedBy": "6870f312cd0cc7f1a07c2151",
-  //     "status": "pending",
-  //     "createdAt": "2025-07-11T14:28:00.546Z",
-  //     "expiresAt": "2025-07-18T14:28:00.547Z",
-  //     "id": "68711f709bf52922349a4551"
-  // }
-
   const handleInvitation = async (notification: any) => {
     const data = await fetchAPI(
-      Routes.ACCEPT_INVITATION + "/" + notification.groupId.id,
+      Routes.ACCEPT_INVITATION + "/" + notification.groupId._id,
       "POST"
     );
     if (data?.success) {
@@ -96,19 +79,15 @@ const AppHeader = () => {
         description: "You are now a member of the group",
         type: "success",
       });
-      router.push(`/group/${notification.groupId.id}`);
+      router.push(`/group/${notification.groupId._id}`);
     }
   };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container flex h-16 items-center justify-between  sm:pr-6 lg:pr-8 lg:pl-3">
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden" />
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <CreditCard className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg">{siteConfig.name}</span>
-          </Link>
+          <SidebarTrigger className="md:flex" />
         </div>
 
         <div className="flex items-center space-x-4">
@@ -118,40 +97,64 @@ const AppHeader = () => {
                 <Bell className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-96" align="end">
-              {notifications.map((notification) => (
-                <DropdownMenuItem
-                  key={notification._id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleInvitation(notification)}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <div className="flex flex-col w-full">
-                      <span>
-                        <span className="font-bold">
-                          {notification.groupId.name}
-                        </span>{" "}
-                        invited you to join their group
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(notification.createdAt, "dd MMM yyyy")}
+
+            <DropdownMenuContent className="w-[500px] p-3" align="end">
+              <div className="space-y-3">
+                {notifications.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground">No notifications</p>
+                )}
+                {notifications.map((notification) => (
+                  <div
+                    key={notification._id}
+                    className={`rounded-md p-3 transition-all flex justify-between items-start ${
+                      notification.status === "pending"
+                        ? "bg-muted/50 border border-green-400"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <div className="flex flex-col text-sm w-full">
+                      <p>
+                        <span className="font-semibold">{notification.invitedBy.username}</span>{" "}
+                        invited you to join{" "}
+                        <span className="font-semibold">{notification.groupId.name}</span>
+                      </p>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        Sent on {format(new Date(notification.createdAt), "dd MMM yyyy")}
                       </span>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
+
+                    {notification.status === "pending" ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="ml-4 mt-1 bg-green-500 hover:bg-green-600 text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInvitation(notification);
+                        }}
+                      >
+                        Accept
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-4 mt-1 cursor-default"
+                        disabled
+                      >
+                        Accepted
+                      </Button>
+                    )}
                   </div>
-                </DropdownMenuItem>
-              ))}
+                ))}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
+
           {currentUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
-                >
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={

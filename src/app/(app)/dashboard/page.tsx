@@ -4,17 +4,15 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {  useAppSelector } from "@/store/hooks";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import Summary from "@/components/dashboard/Summary";
 
 export default function DashboardPage() {
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+   const user = useAppSelector((state) => state.auth.user);;
 
 
-
+  console.log("This is user", user)
   return (
     <div className="space-y-8">
       <section className="bg-card p-8 rounded-lg shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
