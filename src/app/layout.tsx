@@ -5,6 +5,7 @@ import "./globals.css";
 import { ReduxProvider } from "@/components/providers/ReduxProvider"; // Import ReduxProvider
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Toaster } from "sonner";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,20 +28,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const Loader = () => {
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  };
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProvider>
-          {" "}
-          {/* Wrap with ReduxProvider */}
-          <QueryProvider>
-            {" "}
-            {/* ✅ Wrap Redux with Query */}
-            {children}
-            <Toaster />
-          </QueryProvider>
+          <Suspense fallback={<Loader />}>
+            {/* Wrap with ReduxProvider */}
+            <QueryProvider>
+              {" "}
+              {/* ✅ Wrap Redux with Query */}
+              {children}
+              <Toaster />
+            </QueryProvider>
+          </Suspense>
         </ReduxProvider>
       </body>
     </html>

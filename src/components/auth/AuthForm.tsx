@@ -16,8 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { loginUser, clearAuthError } from "@/store/slices/authSlice";
+import { useAppDispatch } from "@/store/hooks";
 import { fetchAPI } from "@/lib/apiClient";
 import Routes from "@/config/apiConstants";
 import { showToast } from "@/lib/utils";
@@ -26,13 +25,10 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    dispatch(clearAuthError());
-  }, [dispatch]);
+ 
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();

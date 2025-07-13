@@ -6,20 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchGroups } from "@/store/slices/groupSlice";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import Summary from "@/components/dashboard/Summary";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
-  const { status: groupStatus } = useAppSelector((state) => state.groups);
   const { user } = useAppSelector((state) => state.auth);
 
-  useEffect(() => {
-    if (groupStatus === "idle" && user) {
-      dispatch(fetchGroups());
-    }
-  }, [dispatch, groupStatus, user]);
+
 
   return (
     <div className="space-y-8">
